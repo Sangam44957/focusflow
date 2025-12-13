@@ -91,9 +91,9 @@ export const Sidebar = ({ isMobile = false, onClose }) => {
                 key={item.name}
                 to={item.href}
                 onClick={handleNavClick}
-                className={`group/item flex items-center px-3 py-3 rounded-xl transition-all duration-200 hover:shadow-md ${
+                className={`group/item relative flex items-center px-3 py-3 rounded-xl transition-all duration-200 hover:shadow-md ${
                   isActive
-                    ? 'bg-blue-50 shadow-lg border border-blue-200'
+                    ? ''
                     : 'hover:bg-gray-50'
                 }`}
               >
@@ -114,7 +114,7 @@ export const Sidebar = ({ isMobile = false, onClose }) => {
                   {item.name}
                 </span>
                 {isActive && (
-                  <div className={`ml-auto w-2 h-2 bg-blue-500 rounded-full ${isMobile ? 'opacity-100' : 'opacity-0 group-hover/sidebar:opacity-100'} transition-opacity duration-300`}></div>
+                  <div className={`absolute right-3 w-2 h-2 bg-blue-500 rounded-full ${isMobile ? 'opacity-100' : 'opacity-0 group-hover/sidebar:opacity-100'} transition-opacity duration-300`}></div>
                 )}
               </NavLink>
             );

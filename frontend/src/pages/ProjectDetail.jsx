@@ -222,17 +222,17 @@ export const ProjectDetail = () => {
   return (
     <div>
       {/* Project Header */}
-      <div className="glass rounded-2xl shadow-xl border border-white/20 p-8 mb-8 animate-slide-in">
-        <div className="flex justify-between items-start">
-          <div className="flex items-start space-x-6">
-            <div className="relative">
+      <div className="glass rounded-2xl shadow-xl border border-white/20 p-4 lg:p-8 mb-8 animate-slide-in">
+        <div className="flex flex-col lg:flex-row lg:justify-between lg:items-start gap-6">
+          <div className="flex flex-col sm:flex-row items-start space-y-4 sm:space-y-0 sm:space-x-6">
+            <div className="relative flex-shrink-0">
               <div 
-                className="w-20 h-20 rounded-2xl shadow-lg flex items-center justify-center"
+                className="w-16 h-16 lg:w-20 lg:h-20 rounded-2xl shadow-lg flex items-center justify-center"
                 style={{ 
                   background: `linear-gradient(135deg, ${project.color || '#6366f1'}, ${project.color || '#6366f1'}dd)` 
                 }}
               >
-                <span className="text-white text-2xl font-bold">
+                <span className="text-white text-xl lg:text-2xl font-bold">
                   {project.name.charAt(0).toUpperCase()}
                 </span>
               </div>
@@ -247,10 +247,10 @@ export const ProjectDetail = () => {
               </div>
             </div>
             
-            <div className="flex-1">
-              <div className="flex items-center gap-4 mb-3">
-                <h1 className="text-3xl font-bold text-gray-900">{project.name}</h1>
-                <span className={`px-4 py-2 rounded-full text-sm font-semibold border ${
+            <div className="flex-1 min-w-0">
+              <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 mb-3">
+                <h1 className="text-2xl lg:text-3xl font-bold text-gray-900 truncate">{project.name}</h1>
+                <span className={`px-3 py-1 lg:px-4 lg:py-2 rounded-full text-sm font-semibold border self-start ${
                   project.status === 'ACTIVE' 
                     ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
                     : project.status === 'PAUSED'
@@ -261,34 +261,34 @@ export const ProjectDetail = () => {
                 </span>
               </div>
               
-              <p className="text-gray-600 text-lg mb-4 leading-relaxed">
+              <p className="text-gray-600 text-base lg:text-lg mb-4 leading-relaxed">
                 {project.description || 'No description provided'}
               </p>
               
-              <div className="grid grid-cols-4 gap-6">
-                <div className="flex items-center space-x-3">
-                  <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
-                  <div>
-                    <p className="text-sm text-gray-500">Total Tasks</p>
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
+                <div className="flex items-center space-x-2 lg:space-x-3">
+                  <div className="w-3 h-3 bg-blue-500 rounded-full flex-shrink-0"></div>
+                  <div className="min-w-0">
+                    <p className="text-xs lg:text-sm text-gray-500">Total Tasks</p>
                     <p className="font-semibold text-gray-900">{tasks.length}</p>
                   </div>
                 </div>
-                <div className="flex items-center space-x-3">
-                  <div className="w-3 h-3 bg-emerald-500 rounded-full"></div>
-                  <div>
-                    <p className="text-sm text-gray-500">Completed</p>
+                <div className="flex items-center space-x-2 lg:space-x-3">
+                  <div className="w-3 h-3 bg-emerald-500 rounded-full flex-shrink-0"></div>
+                  <div className="min-w-0">
+                    <p className="text-xs lg:text-sm text-gray-500">Completed</p>
                     <p className="font-semibold text-gray-900">{tasks.filter(t => t.status === 'COMPLETED').length}</p>
                   </div>
                 </div>
-                <div className="flex items-center space-x-3">
-                  <div className={`w-3 h-3 rounded-full ${
+                <div className="flex items-center space-x-2 lg:space-x-3">
+                  <div className={`w-3 h-3 rounded-full flex-shrink-0 ${
                     project.deadline 
                       ? (new Date(project.deadline) < new Date() ? 'bg-red-500' : 'bg-orange-500')
                       : 'bg-gray-400'
                   }`}></div>
-                  <div>
-                    <p className="text-sm text-gray-500">Deadline</p>
-                    <p className={`font-semibold ${
+                  <div className="min-w-0">
+                    <p className="text-xs lg:text-sm text-gray-500">Deadline</p>
+                    <p className={`font-semibold text-xs lg:text-sm ${
                       project.deadline 
                         ? (new Date(project.deadline) < new Date() ? 'text-red-600' : 'text-gray-900')
                         : 'text-gray-500'
@@ -296,59 +296,62 @@ export const ProjectDetail = () => {
                       {project.deadline 
                         ? (() => {
                             const days = Math.ceil((new Date(project.deadline) - new Date()) / (1000 * 60 * 60 * 24));
-                            return days < 0 ? `${Math.abs(days)} days overdue` : days === 0 ? 'Due today' : `${days} days left`;
+                            return days < 0 ? `${Math.abs(days)}d overdue` : days === 0 ? 'Due today' : `${days}d left`;
                           })()
                         : 'No deadline'
                       }
                     </p>
                   </div>
                 </div>
-                <div className="flex items-center space-x-3">
-                  <div className="w-3 h-3 bg-gray-400 rounded-full"></div>
-                  <div>
-                    <p className="text-sm text-gray-500">Created</p>
-                    <p className="font-semibold text-gray-900">{new Date(project.createdAt).toLocaleDateString()}</p>
+                <div className="flex items-center space-x-2 lg:space-x-3">
+                  <div className="w-3 h-3 bg-gray-400 rounded-full flex-shrink-0"></div>
+                  <div className="min-w-0">
+                    <p className="text-xs lg:text-sm text-gray-500">Created</p>
+                    <p className="font-semibold text-xs lg:text-sm text-gray-900">{new Date(project.createdAt).toLocaleDateString()}</p>
                   </div>
                 </div>
               </div>
             </div>
           </div>
           
-          <div className="flex gap-3">
+          <div className="flex flex-wrap gap-2 lg:gap-3">
             <input
               type="date"
               value={project.deadline ? new Date(project.deadline).toISOString().split('T')[0] : ''}
               onChange={(e) => handleUpdateDeadline(e.target.value ? new Date(e.target.value).toISOString() : null)}
-              className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+              className="px-2 py-1 lg:px-3 lg:py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
               title="Set deadline"
             />
             <Button
               variant={project.status === 'PAUSED' ? 'primary' : 'secondary'}
               onClick={() => handleProjectStatusChange(project.status === 'PAUSED' ? 'ACTIVE' : 'PAUSED')}
               loading={statusLoading}
-              className="hover-lift"
+              className="hover-lift text-sm px-3 py-1 lg:px-4 lg:py-2"
             >
-              {project.status === 'PAUSED' ? '▶️ Resume' : '⏸️ Pause'}
+              <span className="hidden sm:inline">{project.status === 'PAUSED' ? '▶️ Resume' : '⏸️ Pause'}</span>
+              <span className="sm:hidden">{project.status === 'PAUSED' ? '▶️' : '⏸️'}</span>
             </Button>
             <Button 
               onClick={() => setShowTaskModal(true)}
-              className="hover-lift bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-800"
+              className="hover-lift bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-800 text-sm px-3 py-1 lg:px-4 lg:py-2"
             >
-              + Add Task
+              <span className="hidden sm:inline">+ Add Task</span>
+              <span className="sm:hidden">+</span>
             </Button>
             <Button
               variant="danger"
               onClick={handleDeleteProject}
-              className="hover-lift bg-red-500 hover:bg-red-600 text-white"
+              className="hover-lift bg-red-500 hover:bg-red-600 text-white text-sm px-3 py-1 lg:px-4 lg:py-2"
             >
-              🗑️ Delete
+              <span className="hidden sm:inline">🗑️ Delete</span>
+              <span className="sm:hidden">🗑️</span>
             </Button>
           </div>
         </div>
       </div>
 
       {/* Professional Kanban Board */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-8">
         {columns.map((col, colIndex) => {
           const columnTasks = tasks.filter(task => task.status === col.key);
           
@@ -376,12 +379,12 @@ export const ProjectDetail = () => {
               </div>
               
               {/* Column Content */}
-              <div className="bg-white rounded-b-2xl shadow-lg h-[500px] p-4">
-                <div className="h-full overflow-y-auto space-y-4 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
+              <div className="bg-white rounded-b-2xl shadow-lg h-[400px] lg:h-[500px] p-2 lg:p-4">
+                <div className="h-full overflow-y-auto space-y-3 lg:space-y-4 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
                   {columnTasks.map((task, index) => (
                     <div 
                       key={task.id} 
-                      className="group hover-lift bg-white border border-gray-200 rounded-xl p-4 shadow-sm hover:shadow-md transition-all duration-200 animate-fade-in"
+                      className="group hover-lift bg-white border border-gray-200 rounded-xl p-3 lg:p-4 shadow-sm hover:shadow-md transition-all duration-200 animate-fade-in"
                       style={{ animationDelay: `${index * 50}ms` }}
                     >
                       {/* Task Header */}
