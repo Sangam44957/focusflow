@@ -1,15 +1,15 @@
+# render.yaml
 services:
   - type: web
-    name: focusflow-backend
+    name: focusflow-api
     env: node
+    region: oregon
     plan: free
-    buildCommand: cd backend && npm install && npm run build
+    buildCommand: cd backend && npm install && npx prisma generate
     startCommand: cd backend && npm start
     envVars:
       - key: NODE_ENV
         value: production
-      - key: PORT
-        value: 10000
       - key: DATABASE_URL
         fromDatabase:
           name: focusflow-db
@@ -19,10 +19,10 @@ services:
       - key: REFRESH_TOKEN_SECRET
         generateValue: true
       - key: FRONTEND_URL
-        value: https://focusflow-frontend.vercel.app
+        value: https://focusflow.vercel.app
 
 databases:
   - name: focusflow-db
+    plan: free
     databaseName: focusflow
     user: focusflow
-    plan: free

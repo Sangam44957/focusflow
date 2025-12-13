@@ -1,6 +1,6 @@
 # .github/workflows/deploy.yml
 
-name: Deploy FocusFlow
+name: CI/CD Pipeline
 
 on:
   push:
@@ -59,9 +59,13 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
       
-      - name: Trigger Deployment
+      - name: Deploy Status
         run: |
           echo "✅ Build successful - Ready for deployment"
           echo "Backend: Deploy to Render via GitHub integration"
           echo "Frontend: Deploy to Vercel via GitHub integration"
-          echo "Database: Run migrations manually after deployment"
+          echo "📋 Deployment checklist:"
+          echo "1. Connect GitHub repo to Render for backend"
+          echo "2. Connect GitHub repo to Vercel for frontend"
+          echo "3. Set environment variables in deployment platforms"
+          echo "4. Run database migrations after first deployment"
