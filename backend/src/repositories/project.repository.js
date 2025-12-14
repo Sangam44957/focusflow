@@ -42,7 +42,10 @@ export const projectRepository = {
 
   update: async (id, userId, data) => {
     return prisma.project.update({
-      where: { id },
+      where: { 
+        id,
+        userId // Ensure user owns the project
+      },
       data,
       include: {
         _count: {

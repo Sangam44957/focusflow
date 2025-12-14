@@ -38,6 +38,6 @@ taskRouter.route('/:id')
   .put(updateTask)
   .delete(deleteTask);
 
-taskRouter.patch('/:id/status', updateTaskStatus);
+taskRouter.patch('/:id/status', validate(updateTaskStatusSchema), updateTaskStatus);
 
 export default router;

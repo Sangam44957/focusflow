@@ -11,7 +11,7 @@ import {
 } from '../controllers/project.controller.js';
 import { auth } from '../middlewares/auth.middleware.js';
 import { validate } from '../middlewares/validate.middleware.js';
-import { createProjectSchema, updateProjectSchema } from '../validations/project.schema.js';
+import { createProjectSchema, updateProjectSchema, updateProjectStatusSchema } from '../validations/project.schema.js';
 
 const router = Router();
 
@@ -29,6 +29,6 @@ router.route('/:id')
   .put(updateProject)
   .delete(deleteProject);
 
-router.patch('/:id/status', updateProjectStatus);
+router.patch('/:id/status', validate(updateProjectStatusSchema), updateProjectStatus);
 
 export default router;

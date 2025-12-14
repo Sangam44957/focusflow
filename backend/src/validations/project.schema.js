@@ -10,3 +10,7 @@ export const createProjectSchema = z.object({
 });
 
 export const updateProjectSchema = createProjectSchema.partial();
+
+export const updateProjectStatusSchema = z.object({
+  status: z.enum(['ACTIVE', 'PAUSED', 'COMPLETED', 'ARCHIVED']),
+});

@@ -17,9 +17,13 @@ export const taskRepository = {
     });
   },
   
-  findById: async (id) => {
-    return prisma.task.findUnique({
-      where: { id },
+  findById: async (id, userId = null) => {
+    const where = { id };
+    if (userId) {
+      where.project = { userId };
+    }
+    return prisma.task.findFirst({
+      where,
       include: { project: true }
     });
   },
@@ -37,14 +41,30 @@ export const taskRepository = {
     });
   },
   
-  update: async (id, data) => {
+  update: async (id, data, userId = null) => {
+    const where = { id };
+    if (userId) {
+      // Verify ownership through project
+      const task = await prisma.task.findFirst({
+        where: { id, project: { userId } }
+      });
+      if (!task) throw new Error('Task not found or access denied');
+    }
     return prisma.task.update({
       where: { id },
       data
     });
   },
   
-  updateStatus: async (id, status) => {
+  updateStatus: async (id, status, userId = null) => {
+    // Verify ownership if userId provided
+    if (userId) {
+      const task = await prisma.task.findFirst({
+        where: { id, project: { userId } }
+      });
+      if (!task) throw new Error('Task not found or access denied');
+    }
+    
     // Get current task to log previous status
     const currentTask = await prisma.task.findUnique({
       where: { id },
@@ -72,7 +92,14 @@ export const taskRepository = {
     return task;
   },
   
-  delete: async (id) => {
+  delete: async (id, userId = null) => {
+    if (userId) {
+      // Verify ownership through project
+      const task = await prisma.task.findFirst({
+        where: { id, project: { userId } }
+      });
+      if (!task) throw new Error('Task not found or access denied');
+    }
     return prisma.task.delete({
       where: { id }
     });

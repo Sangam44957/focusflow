@@ -28,43 +28,15 @@ export const taskService = {
   },
   
   update: async (taskId, userId, data) => {
-    const task = await taskRepository.findById(taskId);
-    if (!task) {
-      throw new ApiError(404, 'Task not found');
-    }
-    
-    // Verify ownership through project
-    if (task.project.userId !== userId) {
-      throw new ApiError(403, 'Not authorized');
-    }
-    
-    return taskRepository.update(taskId, data);
+    return taskRepository.update(taskId, data, userId);
   },
   
   updateStatus: async (taskId, userId, status) => {
-    const task = await taskRepository.findById(taskId);
-    if (!task) {
-      throw new ApiError(404, 'Task not found');
-    }
-    
-    if (task.project.userId !== userId) {
-      throw new ApiError(403, 'Not authorized');
-    }
-    
-    return taskRepository.updateStatus(taskId, status);
+    return taskRepository.updateStatus(taskId, status, userId);
   },
   
   delete: async (taskId, userId) => {
-    const task = await taskRepository.findById(taskId);
-    if (!task) {
-      throw new ApiError(404, 'Task not found');
-    }
-    
-    if (task.project.userId !== userId) {
-      throw new ApiError(403, 'Not authorized');
-    }
-    
-    return taskRepository.delete(taskId);
+    return taskRepository.delete(taskId, userId);
   },
   
   reorder: async (projectId, userId, taskIds) => {
