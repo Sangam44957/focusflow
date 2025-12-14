@@ -35,7 +35,7 @@ export const GoogleLoginButton = () => {
     setLoading(true);
     const params = new URLSearchParams({
       client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID,
-      redirect_uri: `${window.location.origin}/auth/google/callback`,
+      redirect_uri: `${import.meta.env.VITE_API_URL.replace('/api', '')}/api/oauth/google/callback`,
       response_type: 'code',
       scope: 'openid email profile',
       access_type: 'offline',

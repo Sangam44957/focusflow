@@ -7,49 +7,25 @@ export const GoogleCallback = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const handleCallback = async () => {
-      const urlParams = new URLSearchParams(window.location.search);
-      const code = urlParams.get('code');
-      const error = urlParams.get('error');
+    const urlParams = new URLSearchParams(window.location.search);
+    const authSuccess = urlParams.get('auth');
+    const error = urlParams.get('error');
 
-      if (error) {
-        toast.error('Google login cancelled');
-        navigate('/login');
-        return;
-      }
+    if (error) {
+      toast.error('Google login failed');
+      navigate('/login');
+      return;
+    }
 
-      if (!code) {
-        toast.error('Invalid callback');
-        navigate('/login');
-        return;
-      }
+    if (authSuccess === 'success') {
+      toast.success('Login successful!');
+      navigate('/dashboard');
+      return;
+    }
 
-      try {
-        const res = await fetch(`${import.meta.env.VITE_API_URL}/oauth/google/callback?code=${code}`);
-        
-        if (res.redirected) {
-          window.location.href = res.url;
-          return;
-        }
-
-        const data = await res.json();
-        
-        if (data.success) {
-          localStorage.setItem('accessToken', data.data.accessToken);
-          localStorage.setItem('refreshToken', data.data.refreshToken);
-          toast.success('Welcome!');
-          navigate('/dashboard');
-        } else {
-          toast.error('Login failed');
-          navigate('/login');
-        }
-      } catch (error) {
-        toast.error('Connection failed');
-        navigate('/login');
-      }
-    };
-
-    handleCallback();
+    // If no params, redirect to login
+    toast.error('Invalid callback');
+    navigate('/login');
   }, [navigate]);
 
   return (
