@@ -12,8 +12,14 @@ export const GoogleLoginButton = () => {
     console.log('Google credential response:', response);
     setLoading(true);
     
-    // Use primary API URL
-    const apiUrl = import.meta.env.VITE_API_URL || 'https://focusflow-backend.vercel.app/api';
+    // Use API URL from environment variables
+    const apiUrl = import.meta.env.VITE_API_URL;
+    
+    if (!apiUrl) {
+      toast.error('API configuration missing. Please contact support.');
+      setLoading(false);
+      return;
+    }
     
     try {
       console.log('Trying API URL:', `${apiUrl}/auth/google`);
