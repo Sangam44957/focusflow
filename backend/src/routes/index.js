@@ -2,7 +2,7 @@
 import { Router } from 'express';
 import prisma from '../config/database.js';
 import authRoutes from './auth.routes.js';
-import oauthRoutes from './oauth.routes.js';
+
 import projectRoutes from './project.routes.js';
 import taskRoutes, { taskRouter } from './task.routes.js';
 import aiRoutes from './ai.routes.js';
@@ -28,7 +28,7 @@ router.get('/health/db', async (req, res) => {
 });
 
 router.use('/auth', authRoutes);
-router.use('/oauth', oauthRoutes);
+
 router.use('/projects', projectRoutes);
 router.use('/projects', taskRoutes);
 router.use('/tasks', taskRouter);
