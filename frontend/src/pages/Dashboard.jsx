@@ -15,6 +15,27 @@ export const Dashboard = () => {
     fetchDashboardData();
   }, []);
 
+  // Refresh data when component becomes visible (user navigates back)
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (!document.hidden) {
+        fetchDashboardData();
+      }
+    };
+    
+    const handleAnalyticsRefresh = () => {
+      fetchDashboardData();
+    };
+    
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('analyticsRefresh', handleAnalyticsRefresh);
+    
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('analyticsRefresh', handleAnalyticsRefresh);
+    };
+  }, []);
+
   const fetchDashboardData = async () => {
     try {
       const [analyticsRes, projectsRes] = await Promise.all([

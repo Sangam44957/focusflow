@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { Button } from '../components/common/Button';
+import { GoogleLoginButton } from '../components/auth/GoogleLoginButton';
 import toast from 'react-hot-toast';
 
 export const Login = () => {
@@ -146,11 +147,26 @@ export const Login = () => {
             <Button
               type="submit"
               loading={loading}
-              className="btn-primary w-full py-3 sm:py-4 text-sm sm:text-base font-semibold"
+              className="btn-primary w-full py-3 sm:py-4 text-sm sm:text-base font-semibold transform hover:scale-105 transition-all duration-200 hover:shadow-lg"
             >
               {loading ? 'Signing In...' : 'Sign In'}
             </Button>
           </form>
+
+          <div className="mt-6">
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-gray-300"></div>
+              </div>
+              <div className="relative flex justify-center text-sm">
+                <span className="px-2 bg-white text-gray-500">Or continue with</span>
+              </div>
+            </div>
+            
+            <div className="mt-6">
+              <GoogleLoginButton />
+            </div>
+          </div>
 
           <div className="mt-6 text-center">
             <p className="text-sm sm:text-base text-gray-600">

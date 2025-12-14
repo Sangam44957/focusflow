@@ -50,14 +50,14 @@ export const AIPlanner = () => {
       const response = await api.post('/ai/import', { planId: plan.id });
       console.log('Import response:', response.data);
       
-      toast.success(`Project "${response.data.data.project.name}" created with ${response.data.data.tasksCreated} tasks!`);
+      toast.success(`Goal "${response.data.data.project.name}" created with ${response.data.data.tasksCreated} tasks!`);
       
       // Mark plan as imported instead of clearing it
       setPlan(prev => ({ ...prev, imported: true }));
       
     } catch (error) {
       console.error('Import error:', error);
-      const errorMessage = error.response?.data?.message || 'Failed to import plan';
+      const errorMessage = error.response?.data?.message || 'Failed to import goal';
       toast.error(errorMessage);
       
       // If plan was already imported, mark it as imported
@@ -197,7 +197,7 @@ export const AIPlanner = () => {
                     loading={importing}
                     disabled={importing}
                   >
-                    📥 Import as Project
+                    📥 Import as Goal
                   </Button>
                 ) : (
                   <Button 

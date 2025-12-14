@@ -17,6 +17,27 @@ export const Analytics = () => {
     fetchAnalytics();
   }, []);
 
+  // Refresh data when component becomes visible (user navigates back)
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (!document.hidden) {
+        fetchAnalytics();
+      }
+    };
+    
+    const handleAnalyticsRefresh = () => {
+      fetchAnalytics();
+    };
+    
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('analyticsRefresh', handleAnalyticsRefresh);
+    
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('analyticsRefresh', handleAnalyticsRefresh);
+    };
+  }, []);
+
   const fetchAnalytics = async () => {
     try {
       const [overviewRes, trendRes, productivityRes] = await Promise.all([
@@ -58,8 +79,8 @@ export const Analytics = () => {
 
   const stats = [
     {
-      title: 'Total Projects',
-      value: analytics?.totalProjects || 0,
+      title: 'Total Goals',
+      value: analytics?.totalGoals || analytics?.totalProjects || 0,
       icon: '🎯',
       color: 'bg-blue-100 text-blue-700',
       gradient: 'from-blue-500 to-blue-600'

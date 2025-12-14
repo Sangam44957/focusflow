@@ -50,6 +50,9 @@ export const Projects = () => {
       setShowModal(false);
       setEditingProject(null);
       fetchProjects();
+      
+      // Trigger analytics refresh by dispatching a custom event
+      window.dispatchEvent(new CustomEvent('analyticsRefresh'));
     } catch (error) {
       toast.error(error.response?.data?.message || `Failed to ${editingProject ? 'update' : 'create'} goal`);
     } finally {
@@ -77,6 +80,9 @@ export const Projects = () => {
           await api.delete(`/projects/${projectId}`);
           toast.success('Goal deleted successfully!', { duration: 2000 });
           fetchProjects();
+          
+          // Trigger analytics refresh
+          window.dispatchEvent(new CustomEvent('analyticsRefresh'));
         } catch (error) {
           toast.error('Failed to delete goal', { duration: 2000 });
         } finally {

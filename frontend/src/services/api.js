@@ -25,15 +25,43 @@ api.interceptors.request.use(
   }
 );
 
-// Response interceptor to handle errors
+// Response interceptor to handle errors and token refresh
 api.interceptors.response.use(
   (response) => response,
-  (error) => {
-    if (error.response?.status === 401) {
-      localStorage.removeItem('accessToken');
-      localStorage.removeItem('refreshToken');
-      window.location.href = '/login';
+  async (error) => {
+    const originalRequest = error.config;
+    
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      originalRequest._retry = true;
+      
+      const refreshToken = localStorage.getItem('refreshToken');
+      if (refreshToken) {
+        try {
+          const response = await axios.post(`${API_URL}/auth/refresh`, {
+            refreshToken
+          });
+          
+          const { accessToken } = response.data.data;
+          localStorage.setItem('accessToken', accessToken);
+          
+          // Retry original request with new token
+          originalRequest.headers.Authorization = `Bearer ${accessToken}`;
+          return api(originalRequest);
+        } catch (refreshError) {
+          // Refresh failed, redirect to login
+          localStorage.removeItem('accessToken');
+          localStorage.removeItem('refreshToken');
+          window.location.href = '/login';
+          return Promise.reject(refreshError);
+        }
+      } else {
+        // No refresh token, redirect to login
+        localStorage.removeItem('accessToken');
+        localStorage.removeItem('refreshToken');
+        window.location.href = '/login';
+      }
     }
+    
     return Promise.reject(error);
   }
 );

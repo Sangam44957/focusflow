@@ -74,6 +74,9 @@ export const ProjectDetail = () => {
       setShowModal(false);
       setFormData({ title: '', description: '', priority: 'MEDIUM', dueDate: '' });
       fetchProjectData();
+      
+      // Trigger analytics refresh
+      window.dispatchEvent(new CustomEvent('analyticsRefresh'));
     } catch (error) {
       console.error('Task creation error:', error);
       toast.error(error.response?.data?.message || 'Failed to create task');
@@ -93,6 +96,9 @@ export const ProjectDetail = () => {
       setShowTaskModal(false);
       setEditingTask(null);
       fetchProjectData();
+      
+      // Trigger analytics refresh
+      window.dispatchEvent(new CustomEvent('analyticsRefresh'));
     } catch (error) {
       toast.error(error.response?.data?.message || `Failed to ${editingTask ? 'update' : 'create'} task`);
     } finally {
@@ -114,6 +120,9 @@ export const ProjectDetail = () => {
     try {
       await api.patch(`/tasks/${taskId}/status`, { status: newStatus });
       fetchProjectData();
+      
+      // Trigger analytics refresh
+      window.dispatchEvent(new CustomEvent('analyticsRefresh'));
     } catch (error) {
       toast.error('Failed to update task status');
     }
@@ -154,6 +163,9 @@ export const ProjectDetail = () => {
           await api.delete(`/tasks/${taskId}`);
           toast.success('Task deleted successfully!', { duration: 2000 });
           fetchProjectData();
+          
+          // Trigger analytics refresh
+          window.dispatchEvent(new CustomEvent('analyticsRefresh'));
         } catch (error) {
           toast.error('Failed to delete task', { duration: 2000 });
         } finally {
@@ -173,6 +185,10 @@ export const ProjectDetail = () => {
         try {
           await api.delete(`/projects/${id}`);
           toast.success('Project deleted successfully!', { duration: 2000 });
+          
+          // Trigger analytics refresh
+          window.dispatchEvent(new CustomEvent('analyticsRefresh'));
+          
           navigate('/projects');
         } catch (error) {
           toast.error('Failed to delete project', { duration: 2000 });

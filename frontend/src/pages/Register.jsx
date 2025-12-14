@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { Button } from '../components/common/Button';
+import { GoogleLoginButton } from '../components/auth/GoogleLoginButton';
 import toast from 'react-hot-toast';
 
 export const Register = () => {
@@ -272,11 +273,26 @@ export const Register = () => {
             <Button
               type="submit"
               loading={loading}
-              className="btn-primary w-full py-4 text-base font-semibold mt-6"
+              className="btn-primary w-full py-4 text-base font-semibold mt-6 transform hover:scale-105 transition-all duration-200 hover:shadow-lg"
             >
               {loading ? 'Creating Account...' : 'Create Account'}
             </Button>
           </form>
+
+          <div className="mt-6">
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-gray-300"></div>
+              </div>
+              <div className="relative flex justify-center text-sm">
+                <span className="px-2 bg-white text-gray-500">Or continue with</span>
+              </div>
+            </div>
+            
+            <div className="mt-6">
+              <GoogleLoginButton />
+            </div>
+          </div>
 
           <div className="mt-6 text-center">
             <p className="text-gray-600">
