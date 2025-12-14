@@ -31,7 +31,7 @@ export const GoogleLoginButton = () => {
         localStorage.setItem('accessToken', data.data.accessToken);
         localStorage.setItem('refreshToken', data.data.refreshToken);
         toast.success('Welcome!');
-        navigate('/dashboard');
+        window.location.href = '/dashboard';
         return;
       }
       
