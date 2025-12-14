@@ -118,36 +118,55 @@ export const ProjectDetail = () => {
 
   const handleStatusChange = async (taskId, newStatus) => {
     try {
-      await api.patch(`/tasks/${taskId}/status`, { status: newStatus });
-      fetchProjectData();
+      console.log('Updating task status:', { taskId, newStatus });
+      const response = await api.patch(`/tasks/${taskId}/status`, { status: newStatus });
       
-      // Trigger analytics refresh
-      window.dispatchEvent(new CustomEvent('analyticsRefresh'));
+      if (response.data.success) {
+        toast.success('Task status updated!');
+        await fetchProjectData();
+        
+        // Trigger analytics refresh
+        window.dispatchEvent(new CustomEvent('analyticsRefresh'));
+      } else {
+        throw new Error(response.data.message || 'Update failed');
+      }
     } catch (error) {
-      toast.error('Failed to update task status');
+      console.error('Task status update error:', error);
+      toast.error(error.response?.data?.message || 'Failed to update task status');
     }
   };
 
   const [statusLoading, setStatusLoading] = useState(false);
 
   const handleProjectStatusChange = async (newStatus) => {
+    if (statusLoading) return;
+    
     setStatusLoading(true);
     try {
-      console.log('Updating project status to:', newStatus);
+      console.log('Updating project status from', project.status, 'to:', newStatus);
+      
       const response = await api.patch(`/projects/${id}/status`, { status: newStatus });
       console.log('Status update response:', response.data);
       
-      const statusText = newStatus === 'PAUSED' ? 'paused' : 'resumed';
-      toast.success(`Project ${statusText} successfully!`);
-      
-      // Update local state immediately for better UX
-      setProject(prev => ({ ...prev, status: newStatus }));
-      
-      // Refresh data
-      fetchProjectData();
+      if (response.data.success) {
+        const statusText = newStatus === 'PAUSED' ? 'paused' : 'resumed';
+        toast.success(`Project ${statusText} successfully!`);
+        
+        // Update local state immediately for better UX
+        setProject(prev => ({ ...prev, status: newStatus }));
+        
+        // Refresh data to ensure consistency
+        await fetchProjectData();
+      } else {
+        throw new Error(response.data.message || 'Update failed');
+      }
     } catch (error) {
-      console.error('Status update error:', error);
-      toast.error(error.response?.data?.message || 'Failed to update project status');
+      console.error('Status update error:', {
+        error: error.message,
+        response: error.response?.data,
+        status: error.response?.status
+      });
+      toast.error(error.response?.data?.message || error.message || 'Failed to update project status');
     } finally {
       setStatusLoading(false);
     }
@@ -449,7 +468,7 @@ export const ProjectDetail = () => {
                         </div>
                         
                         <div className="flex items-center justify-between">
-                          <div className="flex gap-2">
+                          <div className="flex gap-1">
                             {[
                               { value: 'TODO', label: 'To Do', emoji: '📝', color: 'gray' },
                               { value: 'IN_PROGRESS', label: 'Progress', emoji: '🔄', color: 'blue' },
@@ -458,14 +477,15 @@ export const ProjectDetail = () => {
                               <button
                                 key={status.value}
                                 onClick={() => handleStatusChange(task.id, status.value)}
-                                className={`flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium transition-all hover:scale-105 ${
+                                disabled={task.status === status.value}
+                                className={`flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-medium transition-all ${
                                   task.status === status.value
-                                    ? status.color === 'gray' ? 'bg-gray-100 text-gray-700 ring-2 ring-gray-300'
-                                      : status.color === 'blue' ? 'bg-blue-100 text-blue-700 ring-2 ring-blue-300'
-                                      : 'bg-green-100 text-green-700 ring-2 ring-green-300'
-                                    : 'bg-gray-50 text-gray-500 hover:bg-gray-100'
+                                    ? status.color === 'gray' ? 'bg-gray-200 text-gray-800 cursor-default'
+                                      : status.color === 'blue' ? 'bg-blue-200 text-blue-800 cursor-default'
+                                      : 'bg-green-200 text-green-800 cursor-default'
+                                    : 'bg-gray-50 text-gray-600 hover:bg-gray-100 hover:scale-105'
                                 }`}
-                                title={`Mark as ${status.label}`}
+                                title={task.status === status.value ? `Currently ${status.label}` : `Move to ${status.label}`}
                               >
                                 <span>{status.emoji}</span>
                                 <span className="hidden sm:inline">{status.label}</span>
@@ -475,14 +495,14 @@ export const ProjectDetail = () => {
                           <div className="flex gap-1">
                             <button
                               onClick={() => handleEditTask(task)}
-                              className="p-2 rounded-lg hover:bg-blue-50 text-blue-500 hover:text-blue-700 transition-colors"
-                              title="Update task"
+                              className="p-1.5 rounded-lg hover:bg-blue-50 text-blue-500 hover:text-blue-700 transition-colors"
+                              title="Edit task"
                             >
                               ✏️
                             </button>
                             <button
                               onClick={() => handleDeleteTask(task.id, task.title)}
-                              className="p-2 rounded-lg hover:bg-red-50 text-red-500 hover:text-red-700 transition-colors"
+                              className="p-1.5 rounded-lg hover:bg-red-50 text-red-500 hover:text-red-700 transition-colors"
                               title="Delete task"
                             >
                               🗑️
