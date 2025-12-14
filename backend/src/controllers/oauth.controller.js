@@ -12,6 +12,9 @@ const client = new OAuth2Client(
   process.env.GOOGLE_REDIRECT_URI
 );
 
+// Cache for verified tokens to avoid repeated verification
+const tokenCache = new Map();
+
 export const googleAuth = asyncHandler(async (req, res) => {
   const { token } = req.body;
   
@@ -20,40 +23,40 @@ export const googleAuth = asyncHandler(async (req, res) => {
   }
 
   try {
-    const ticket = await client.verifyIdToken({
-      idToken: token,
-      audience: process.env.GOOGLE_CLIENT_ID,
-    });
-
-    const payload = ticket.getPayload();
+    // Check cache first
+    let payload = tokenCache.get(token);
+    
+    if (!payload) {
+      const ticket = await client.verifyIdToken({
+        idToken: token,
+        audience: process.env.GOOGLE_CLIENT_ID,
+      });
+      payload = ticket.getPayload();
+      
+      // Cache for 5 minutes
+      tokenCache.set(token, payload);
+      setTimeout(() => tokenCache.delete(token), 5 * 60 * 1000);
+    }
     const { sub: googleId, email, name, picture } = payload;
 
-    let user = await prisma.user.findUnique({
-      where: { email }
+    // Use upsert for better performance
+    const user = await prisma.user.upsert({
+      where: { email },
+      update: {
+        providerId: googleId,
+        provider: 'google',
+        avatar: picture,
+        name: name
+      },
+      create: {
+        email,
+        name,
+        password: await bcrypt.hash(googleId, 8),
+        avatar: picture,
+        provider: 'google',
+        providerId: googleId
+      }
     });
-
-    if (!user) {
-      user = await prisma.user.create({
-        data: {
-          email,
-          name,
-          password: await bcrypt.hash(googleId, 8),
-          avatar: picture,
-          provider: 'google',
-          providerId: googleId
-        }
-      });
-    } else if (!user.providerId) {
-      user = await prisma.user.update({
-        where: { id: user.id },
-        data: { 
-          providerId: googleId,
-          provider: 'google',
-          avatar: picture || user.avatar,
-          name: name || user.name
-        }
-      });
-    }
 
     const [accessToken, refreshToken] = await Promise.all([
       jwt.sign({ userId: user.id }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '15m' }),

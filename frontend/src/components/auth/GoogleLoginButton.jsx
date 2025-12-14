@@ -7,18 +7,26 @@ import toast from 'react-hot-toast';
 export const GoogleLoginButton = () => {
   const [loading, setLoading] = useState(false);
   const [googleReady, setGoogleReady] = useState(false);
+  const [retryCount, setRetryCount] = useState(0);
   const navigate = useNavigate();
 
   const handleCredentialResponse = async (response) => {
+    if (!response?.credential) return;
+    
     setLoading(true);
     
     try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000);
+      
       const res = await fetch(`${import.meta.env.VITE_API_URL}/auth/google`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ token: response.credential }),
+        signal: controller.signal
       });
-
+      
+      clearTimeout(timeoutId);
       const data = await res.json();
 
       if (data.success) {
@@ -31,53 +39,89 @@ export const GoogleLoginButton = () => {
       
       toast.error(data.message || 'Login failed');
     } catch (error) {
-      toast.error('Connection failed. Try again.');
+      if (error.name === 'AbortError') {
+        toast.error('Login timeout. Please try again.');
+      } else {
+        toast.error('Connection failed. Try again.');
+      }
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
+    let mounted = true;
+    
     const initGoogle = () => {
-      if (window.google?.accounts?.id && import.meta.env.VITE_GOOGLE_CLIENT_ID) {
-        try {
-          window.google.accounts.id.initialize({
-            client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID,
-            callback: handleCredentialResponse
-          });
-          setGoogleReady(true);
-        } catch (error) {
-          console.error('Google init failed:', error);
+      if (!mounted || !window.google?.accounts?.id) return;
+      
+      try {
+        window.google.accounts.id.initialize({
+          client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID,
+          callback: handleCredentialResponse,
+          auto_select: false,
+          cancel_on_tap_outside: true,
+          itp_support: true
+        });
+        
+        if (mounted) setGoogleReady(true);
+      } catch (error) {
+        console.error('Google init failed:', error);
+        if (mounted && retryCount < 3) {
+          setTimeout(() => {
+            setRetryCount(prev => prev + 1);
+            initGoogle();
+          }, 1000);
         }
       }
     };
 
-    if (window.google) {
+    if (window.google?.accounts?.id) {
       initGoogle();
     } else {
       const checkGoogle = setInterval(() => {
-        if (window.google) {
+        if (window.google?.accounts?.id) {
           clearInterval(checkGoogle);
           initGoogle();
         }
       }, 100);
       
-      setTimeout(() => clearInterval(checkGoogle), 3000);
+      const timeout = setTimeout(() => {
+        clearInterval(checkGoogle);
+        if (mounted && !googleReady) {
+          toast.error('Google login unavailable. Please refresh.');
+        }
+      }, 5000);
+      
+      return () => {
+        clearInterval(checkGoogle);
+        clearTimeout(timeout);
+        mounted = false;
+      };
     }
-  }, []);
+    
+    return () => { mounted = false; };
+  }, [retryCount]);
 
   return (
     <div className="relative">
       <button
         onClick={() => {
+          if (loading) return;
+          
           if (googleReady && window.google?.accounts?.id) {
-            window.google.accounts.id.prompt();
+            try {
+              window.google.accounts.id.prompt();
+            } catch (error) {
+              console.error('Prompt failed:', error);
+              toast.error('Please try again or refresh the page.');
+            }
           } else {
-            toast.error('Google login not ready. Please wait.');
+            toast.error('Google login not ready. Please wait or refresh.');
           }
         }}
         disabled={loading || !googleReady}
-        className="w-full flex items-center justify-center px-4 py-3 border border-gray-300 rounded-xl bg-white hover:bg-gray-50 transition-colors disabled:opacity-50 text-gray-700 font-medium"
+        className="w-full flex items-center justify-center px-4 py-3 border border-gray-300 rounded-xl bg-white hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-gray-700 font-medium"
       >
         {loading ? (
           <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-gray-600 mr-3"></div>
