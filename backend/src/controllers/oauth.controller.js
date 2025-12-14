@@ -13,13 +13,80 @@ const client = new OAuth2Client(
 );
 
 export const googleAuth = asyncHandler(async (req, res) => {
-  const authUrl = client.generateAuthUrl({
-    access_type: 'offline',
-    scope: ['profile', 'email'],
-    state: JSON.stringify({ returnTo: req.query.returnTo || '/dashboard' })
-  });
+  const { token } = req.body;
+  
+  if (!token) {
+    throw new ApiError(400, 'Google token is required');
+  }
 
-  res.redirect(authUrl);
+  try {
+    const ticket = await client.verifyIdToken({
+      idToken: token,
+      audience: process.env.GOOGLE_CLIENT_ID,
+    });
+
+    const payload = ticket.getPayload();
+    const { sub: googleId, email, name, picture } = payload;
+
+    let user = await prisma.user.findUnique({
+      where: { email }
+    });
+
+    if (!user) {
+      const hashedPassword = await bcrypt.hash(googleId, 10);
+      user = await prisma.user.create({
+        data: {
+          email,
+          name,
+          password: hashedPassword,
+          avatar: picture,
+          provider: 'google',
+          providerId: googleId
+        }
+      });
+    } else if (!user.providerId) {
+      user = await prisma.user.update({
+        where: { id: user.id },
+        data: { 
+          providerId: googleId,
+          provider: 'google',
+          avatar: picture || user.avatar,
+          name: name || user.name
+        }
+      });
+    }
+
+    const accessToken = jwt.sign(
+      { userId: user.id },
+      process.env.ACCESS_TOKEN_SECRET,
+      { expiresIn: '15m' }
+    );
+
+    const refreshToken = jwt.sign(
+      { userId: user.id, tokenVersion: user.tokenVersion },
+      process.env.REFRESH_TOKEN_SECRET,
+      { expiresIn: '7d' }
+    );
+
+    res.json({
+      success: true,
+      message: 'Google login successful',
+      data: {
+        user: {
+          id: user.id,
+          email: user.email,
+          name: user.name,
+          avatar: user.avatar
+        },
+        accessToken,
+        refreshToken
+      }
+    });
+
+  } catch (error) {
+    console.error('Google OAuth error:', error);
+    throw new ApiError(401, 'Invalid Google token');
+  }
 });
 
 export const googleCallback = asyncHandler(async (req, res) => {

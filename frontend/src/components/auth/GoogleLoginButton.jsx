@@ -23,7 +23,7 @@ export const GoogleLoginButton = () => {
       try {
         console.log('Trying API URL:', `${apiUrl}/auth/google`);
         
-        const res = await fetch(`${apiUrl}/oauth/google`, {
+        const res = await fetch(`${apiUrl}/auth/google`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
