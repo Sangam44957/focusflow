@@ -111,10 +111,25 @@ export const Profile = () => {
         name: formData.name.trim()
       };
 
+      console.log('🔄 Sending update request:', updateData);
+      console.log('🔗 API Base URL:', api.defaults.baseURL);
+      console.log('🔑 Token exists:', !!localStorage.getItem('accessToken'));
+      
       const response = await api.put('/auth/profile', updateData);
+      
+      console.log('✅ Update successful:', response.data);
       updateUser(response.data.data);
       toast.success('Profile updated successfully!');
     } catch (error) {
+      console.error('❌ Update failed:', {
+        status: error.response?.status,
+        statusText: error.response?.statusText,
+        data: error.response?.data,
+        message: error.message,
+        url: error.config?.url,
+        method: error.config?.method
+      });
+      
       toast.error(error.response?.data?.message || 'Failed to update profile');
     } finally {
       setLoading(false);

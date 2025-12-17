@@ -96,10 +96,17 @@ export const changePassword = asyncHandler(async (req, res) => {
 });
 
 export const updateProfile = asyncHandler(async (req, res) => {
+  console.log('🔄 Profile update request received:', {
+    userId: req.user?.id,
+    body: req.body,
+    headers: req.headers.authorization ? 'Token present' : 'No token'
+  });
+  
   const { name } = req.body;
   
   // Validate name
   if (!name || !name.trim()) {
+    console.log('❌ Validation failed: Name is empty');
     return res.status(400).json({
       success: false,
       message: 'Name is required'
@@ -107,6 +114,8 @@ export const updateProfile = asyncHandler(async (req, res) => {
   }
 
   const updatedUser = await authService.updateProfile(req.user.id, { name: name.trim() });
+  
+  console.log('✅ Profile updated successfully:', updatedUser);
   
   res.json({
     success: true,
