@@ -57,6 +57,10 @@ export const AuthProvider = ({ children }) => {
     }
   };
   
+  const updateUser = (userData) => {
+    setUser(userData);
+  };
+  
   const value = {
     user,
     loading,
@@ -64,6 +68,7 @@ export const AuthProvider = ({ children }) => {
     login,
     register,
     logout,
+    updateUser,
   };
   
   return (

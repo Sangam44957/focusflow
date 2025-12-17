@@ -15,11 +15,6 @@ router.post('/refresh', refresh);
 router.post('/logout', auth, logout);
 router.get('/me', auth, getMe);
 router.post('/change-password', auth, validate(changePasswordSchema), changePassword);
-// Test route without auth first
-router.put('/profile-test', (req, res) => {
-  res.json({ success: true, message: 'Route works!' });
-});
-
 router.put('/profile', auth, updateProfile);
 router.post('/google', googleAuth);
 
