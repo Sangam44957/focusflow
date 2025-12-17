@@ -83,6 +83,9 @@ model Project {
   tasks       Task[]
   
   @@index([userId])
+  @@index([status])
+  @@index([userId, status])
+  @@index([createdAt])
   @@map("projects")
 }
 
@@ -122,6 +125,8 @@ model Task {
   
   @@index([projectId])
   @@index([status])
+  @@index([projectId, status])
+  @@index([dueDate])
   @@map("tasks")
 }
 

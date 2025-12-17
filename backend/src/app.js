@@ -2,14 +2,22 @@
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
+import compression from 'compression';
 import cookieParser from 'cookie-parser';
 import { config } from './config/env.js';
 import { errorHandler } from './middlewares/errorHandler.middleware.js';
 import { generalLimiter } from './middlewares/rateLimiter.middleware.js';
+import { optimizeResponse } from './middlewares/optimize.middleware.js';
 import routes from './routes/index.js';
 import subscriptionRoutes from './routes/subscription.routes.js';
 
 const app = express();
+
+// Compression middleware (must be first for maximum effect)
+app.use(compression());
+
+// Response optimization
+app.use(optimizeResponse);
 
 // Security middleware
 app.use(helmet());
