@@ -200,7 +200,7 @@ SOFTWARE.
 
 ## 👥 Authors
 
-**Sangam** - [@Sangam44957](https://github.com/Sangam44-tech)  
+**Sangam** - [@Sangam44957](https://github.com/Sangam44957)  
 **Abhinandan** - [@abhi2004c](https://github.com/abhi2004c)
 
 ## 🤝 Contributing
@@ -215,5 +215,5 @@ SOFTWARE.
 
 ---
 
-**Live Demo**: [Live](https://focusflow-drab.vercel.app)
+**Live Demo**: [Live](https://focusflow-drab.vercel.app)  
 **Documentation**: [API Docs](docs/api.md)
