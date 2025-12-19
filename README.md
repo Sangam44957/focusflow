@@ -200,7 +200,7 @@ SOFTWARE.
 
 ## 👥 Authors
 
-**Sangam** - [@Sangam44-tech](https://github.com/Sangam44-tech)  
+**Sangam** - [@Sangam44957](https://github.com/Sangam44-tech)  
 **Abhinandan** - [@abhi2004c](https://github.com/abhi2004c)
 
 ## 🤝 Contributing
