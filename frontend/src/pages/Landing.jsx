@@ -229,7 +229,7 @@ export const Landing = () => {
               <span className="text-xl sm:text-2xl font-bold text-white">FocusFlow</span>
             </div>
             <p className="text-gray-400 text-sm sm:text-base lg:text-lg text-center md:text-left">
-              © 2024 FocusFlow. Engineered for Excellence.
+              © 2025 FocusFlow. Engineered for Excellence.
             </p>
           </div>
         </div>

@@ -1,5 +1,6 @@
 // frontend/src/pages/AIPlanner.jsx
 import { useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { Button } from '../components/common/Button';
 import { Card, CardBody } from '../components/common/Card';
 import api from '../services/api';
@@ -11,6 +12,7 @@ export const AIPlanner = () => {
   const [loading, setLoading] = useState(false);
   const [plan, setPlan] = useState(null);
   const [importing, setImporting] = useState(false);
+  const queryClient = useQueryClient();
 
   const handleGenerate = async (e) => {
     e.preventDefault();
@@ -55,6 +57,9 @@ export const AIPlanner = () => {
       // Mark plan as imported instead of clearing it
       setPlan(prev => ({ ...prev, imported: true }));
       
+      // Invalidate projects cache to refresh dashboard
+      queryClient.invalidateQueries(['projects']);
+      
     } catch (error) {
       console.error('Import error:', error);
       const errorMessage = error.response?.data?.message || 'Failed to import goal';
@@ -69,196 +74,206 @@ export const AIPlanner = () => {
     }
   };
 
+  const handleNewPlan = () => {
+    setPlan(null);
+    setGoal('');
+    setDeadline('');
+  };
+
   return (
-    <div className="space-y-6 lg:space-y-8">
-      <div className="mb-6 lg:mb-8">
-        <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900">AI Planner</h1>
-        <p className="text-sm sm:text-base text-gray-500 mt-1">
-          Let AI help you break down your goals into actionable tasks
+    <div className="max-w-6xl mx-auto space-y-6 lg:space-y-8">
+      {/* Header */}
+      <div className="text-center mb-8">
+        <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-3">
+          🤖 AI Goal Planner
+        </h1>
+        <p className="text-base sm:text-lg text-gray-600 max-w-2xl mx-auto">
+          Transform your ideas into structured, actionable plans with AI assistance
         </p>
       </div>
 
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 lg:gap-8">
-        {/* Input Section */}
-        <Card>
-          <CardBody>
-            <h2 className="text-base sm:text-lg font-semibold mb-4">What do you want to achieve?</h2>
-            <form onSubmit={handleGenerate} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Describe your goal
-                </label>
-                <textarea
-                  value={goal}
-                  onChange={(e) => setGoal(e.target.value)}
-                  className="w-full px-3 py-2 text-sm sm:text-base border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 resize-none"
-                  placeholder="E.g., Build a portfolio website with React, create a mobile app for task management, learn Python for data analysis..."
-                  rows={4}
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Target completion date (optional)
-                </label>
-                <input
-                  type="date"
-                  value={deadline}
-                  onChange={(e) => setDeadline(e.target.value)}
-                  className="w-full px-3 py-2 text-sm sm:text-base border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
-                  min={new Date().toISOString().split('T')[0]}
-                />
-                <p className="text-xs text-gray-500 mt-1">
-                  {deadline ? 'AI will distribute task deadlines to meet your target date' : 'AI will distribute task deadlines automatically based on priority'}
-                </p>
-              </div>
-              <Button 
-                type="submit" 
-                loading={loading}
-                className="w-full text-sm sm:text-base"
-              >
-                🤖 Generate Plan
-              </Button>
-            </form>
-          </CardBody>
-        </Card>
-
-        {/* Output Section */}
-        <Card>
-          <CardBody>
-            <h2 className="text-base sm:text-lg font-semibold mb-4">Generated Plan</h2>
-            {plan ? (
-              <div className="space-y-4">
+      {!plan ? (
+        /* Input Form */
+        <div className="max-w-2xl mx-auto">
+          <Card>
+            <CardBody className="p-6 lg:p-8">
+              <form onSubmit={handleGenerate} className="space-y-6">
                 <div>
-                  <h3 className="text-sm sm:text-base font-semibold text-gray-900 mb-2">{plan.projectName}</h3>
-                  <p className="text-gray-600 text-xs sm:text-sm mb-2">{plan.projectDescription}</p>
-                  {plan.deadline && (
-                    <div className="flex items-center text-xs sm:text-sm text-gray-600 mb-4">
-                      <svg className="w-3 h-3 sm:w-4 sm:h-4 mr-1 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                      </svg>
-                      <span className="truncate">Target completion: {new Date(plan.deadline).toLocaleDateString()}</span>
-                    </div>
-                  )}
-                  {plan.imported && (
-                    <div className="bg-green-50 border border-green-200 rounded-lg p-3 mb-4">
-                      <p className="text-green-700 text-xs sm:text-sm font-medium">
-                        ✅ This plan has been imported as a goal.
-                      </p>
-                    </div>
-                  )}
+                  <label className="block text-sm font-semibold text-gray-700 mb-3">
+                    What's your goal? ✨
+                  </label>
+                  <textarea
+                    value={goal}
+                    onChange={(e) => setGoal(e.target.value)}
+                    className="w-full px-4 py-3 text-base border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none transition-all"
+                    placeholder="E.g., Build a portfolio website with React, create a mobile app for task management, learn Python for data analysis, start a fitness routine..."
+                    rows={4}
+                    required
+                  />
                 </div>
                 
                 <div>
-                  <h4 className="text-sm sm:text-base font-medium text-gray-900 mb-3">Tasks:</h4>
-                  <div className="space-y-2 max-h-96 overflow-y-auto scrollbar-thin">
-                    {plan.tasks?.map((task, index) => {
-                      const priorityColors = {
-                        HIGH: 'bg-red-100 text-red-700 border-red-200',
-                        MEDIUM: 'bg-yellow-100 text-yellow-700 border-yellow-200',
-                        LOW: 'bg-green-100 text-green-700 border-green-200'
-                      };
-                      
-                      return (
-                        <div key={index} className="flex items-start space-x-2 sm:space-x-3 p-3 sm:p-4 bg-white border border-gray-200 rounded-lg hover:shadow-sm transition-shadow">
-                          <span className="flex-shrink-0 w-6 h-6 sm:w-7 sm:h-7 bg-primary-100 text-primary-700 rounded-full flex items-center justify-center text-xs sm:text-sm font-medium">
-                            {index + 1}
-                          </span>
-                          <div className="flex-1 min-w-0">
-                            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-2 gap-1 sm:gap-2">
-                              <p className="text-sm sm:text-base font-medium text-gray-900 truncate">{task.title}</p>
-                              <span className={`px-2 py-1 text-xs font-medium rounded-full border ${priorityColors[task.priority] || priorityColors.MEDIUM} flex-shrink-0 self-start sm:self-auto`}>
-                                {task.priority}
-                              </span>
-                            </div>
-                            {task.description && (
-                              <p className="text-xs sm:text-sm text-gray-600 mb-2 line-clamp-2">{task.description}</p>
-                            )}
-                            {task.dueDate && (
-                              <div className="flex items-center text-xs text-gray-500">
-                                <svg className="w-3 h-3 mr-1 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                </svg>
-                                <span className="truncate">Due: {new Date(task.dueDate).toLocaleDateString()}</span>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      );
-                    })}
+                  <label className="block text-sm font-semibold text-gray-700 mb-3">
+                    Target completion date (optional) 📅
+                  </label>
+                  <input
+                    type="date"
+                    value={deadline}
+                    onChange={(e) => setDeadline(e.target.value)}
+                    className="w-full px-4 py-3 text-base border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                    min={new Date().toISOString().split('T')[0]}
+                  />
+                  <p className="text-sm text-gray-500 mt-2">
+                    {deadline ? '🎯 AI will create a timeline to meet your deadline' : '⚡ AI will suggest optimal task scheduling'}
+                  </p>
+                </div>
+                
+                <button
+                  type="submit" 
+                  disabled={loading}
+                  className="w-full py-4 text-lg font-semibold text-white rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 transform hover:scale-[1.02] transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 flex items-center justify-center"
+                >
+                  {loading && <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>}
+                  {loading ? '🧠 AI is thinking...' : '🚀 Generate My Plan'}
+                </button>
+              </form>
+            </CardBody>
+          </Card>
+        </div>
+      ) : (
+        /* Generated Plan Display */
+        <div className="space-y-6">
+          {/* Plan Header with Import Button */}
+          <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-2xl p-6 lg:p-8 border border-blue-100">
+            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+              <div className="flex-1">
+                <h2 className="text-xl lg:text-2xl font-bold text-gray-900 mb-2">
+                  🎯 {plan.projectName}
+                </h2>
+                <p className="text-gray-700 mb-3">{plan.projectDescription}</p>
+                {plan.deadline && (
+                  <div className="flex items-center text-sm text-gray-600">
+                    <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    Target: {new Date(plan.deadline).toLocaleDateString()}
                   </div>
-                </div>
-                
-                {!plan.imported ? (
-                  <Button 
-                    onClick={handleImport}
-                    variant="primary"
-                    className="w-full mt-4 sm:mt-6 text-sm sm:text-base"
-                    loading={importing}
-                    disabled={importing}
-                  >
-                    📥 Import as Goal
-                  </Button>
-                ) : (
-                  <Button 
-                    onClick={() => {
-                      setPlan(null);
-                      setGoal('');
-                      setDeadline('');
-                    }}
-                    variant="secondary"
-                    className="w-full mt-4 sm:mt-6 text-sm sm:text-base"
-                  >
-                    🆕 Generate New Plan
-                  </Button>
                 )}
               </div>
-            ) : (
-              <div className="text-center py-8 sm:py-12">
-                <span className="text-4xl sm:text-5xl lg:text-6xl text-gray-300 block mb-3 sm:mb-4">🤖</span>
-                <p className="text-sm sm:text-base text-gray-500">Your AI-generated plan will appear here</p>
-                <p className="text-xs sm:text-sm text-gray-400 mt-2">
-                  Describe your goal and let AI create a structured plan for you
-                </p>
+              
+              <div className="flex flex-col sm:flex-row gap-3">
+                {!plan.imported ? (
+                  <button
+                    onClick={handleImport}
+                    disabled={importing}
+                    className="px-6 py-3 text-base font-semibold text-white rounded-xl bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 transform hover:scale-105 transition-all duration-200 shadow-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 disabled:opacity-50 flex items-center justify-center"
+                  >
+                    {importing && <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>}
+                    {importing ? '📥 Importing...' : '✅ Import as Goal'}
+                  </button>
+                ) : (
+                  <div className="bg-green-100 border border-green-300 rounded-xl px-4 py-3">
+                    <p className="text-green-800 font-semibold text-sm flex items-center">
+                      <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                      Goal Created Successfully!
+                    </p>
+                  </div>
+                )}
+                
+                <Button 
+                  onClick={handleNewPlan}
+                  variant="secondary"
+                  size="lg"
+                >
+                  🆕 New Plan
+                </Button>
               </div>
-            )}
-          </CardBody>
-        </Card>
-      </div>
+            </div>
+          </div>
+
+          {/* Tasks List */}
+          <Card>
+            <CardBody className="p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                <span className="mr-2">📋</span>
+                Tasks ({plan.tasks?.length || 0})
+              </h3>
+              
+              <div className="space-y-3 max-h-96 overflow-y-auto">
+                {plan.tasks?.map((task, index) => {
+                  const priorityColors = {
+                    HIGH: 'bg-red-50 border-red-200 text-red-700',
+                    MEDIUM: 'bg-yellow-50 border-yellow-200 text-yellow-700',
+                    LOW: 'bg-green-50 border-green-200 text-green-700'
+                  };
+                  
+                  return (
+                    <div key={index} className="bg-white border border-gray-200 rounded-xl p-4 hover:shadow-sm transition-shadow">
+                      <div className="flex items-start gap-3">
+                        <div className="flex-shrink-0 w-8 h-8 bg-blue-100 text-blue-700 rounded-full flex items-center justify-center text-sm font-bold">
+                          {index + 1}
+                        </div>
+                        
+                        <div className="flex-1 min-w-0">
+                          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-2">
+                            <h4 className="font-semibold text-gray-900">{task.title}</h4>
+                            <span className={`px-3 py-1 text-xs font-medium rounded-full border ${priorityColors[task.priority] || priorityColors.MEDIUM} self-start sm:self-auto`}>
+                              {task.priority}
+                            </span>
+                          </div>
+                          
+                          {task.description && (
+                            <p className="text-sm text-gray-600 mb-2">{task.description}</p>
+                          )}
+                          
+                          {task.dueDate && (
+                            <div className="flex items-center text-xs text-gray-500">
+                              <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                              </svg>
+                              Due: {new Date(task.dueDate).toLocaleDateString()}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </CardBody>
+          </Card>
+        </div>
+      )}
 
       {/* Features Section */}
-      <div className="mt-8 sm:mt-12">
-        <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-4 sm:mb-6">How AI Planner Works</h3>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
-          <Card>
-            <CardBody className="text-center">
-              <span className="text-3xl sm:text-4xl block mb-2 sm:mb-3">🎯</span>
-              <h4 className="text-sm sm:text-base font-semibold text-gray-900 mb-2">Define Your Goal</h4>
-              <p className="text-xs sm:text-sm text-gray-600">
-                Describe what you want to achieve in natural language
-              </p>
-            </CardBody>
-          </Card>
+      <div className="mt-12">
+        <h3 className="text-xl font-bold text-gray-900 mb-6 text-center">How AI Planning Works</h3>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="text-center p-6 bg-gradient-to-br from-blue-50 to-blue-100 rounded-2xl">
+            <div className="w-16 h-16 bg-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
+              <span className="text-2xl">🎯</span>
+            </div>
+            <h4 className="font-semibold text-gray-900 mb-2">1. Define Your Goal</h4>
+            <p className="text-sm text-gray-600">Describe what you want to achieve in natural language</p>
+          </div>
           
-          <Card>
-            <CardBody className="text-center">
-              <span className="text-3xl sm:text-4xl block mb-2 sm:mb-3">🧠</span>
-              <h4 className="text-sm sm:text-base font-semibold text-gray-900 mb-2">AI Analysis</h4>
-              <p className="text-xs sm:text-sm text-gray-600">
-                Our AI breaks down your goal into actionable tasks
-              </p>
-            </CardBody>
-          </Card>
+          <div className="text-center p-6 bg-gradient-to-br from-purple-50 to-purple-100 rounded-2xl">
+            <div className="w-16 h-16 bg-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
+              <span className="text-2xl">🧠</span>
+            </div>
+            <h4 className="font-semibold text-gray-900 mb-2">2. AI Analysis</h4>
+            <p className="text-sm text-gray-600">AI breaks down your goal into structured, actionable tasks</p>
+          </div>
           
-          <Card>
-            <CardBody className="text-center">
-              <span className="text-3xl sm:text-4xl block mb-2 sm:mb-3">📋</span>
-              <h4 className="text-sm sm:text-base font-semibold text-gray-900 mb-2">Get Your Plan</h4>
-              <p className="text-xs sm:text-sm text-gray-600">
-                Import the generated plan as a project and start working
-              </p>
-            </CardBody>
-          </Card>
+          <div className="text-center p-6 bg-gradient-to-br from-green-50 to-green-100 rounded-2xl">
+            <div className="w-16 h-16 bg-green-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
+              <span className="text-2xl">✅</span>
+            </div>
+            <h4 className="font-semibold text-gray-900 mb-2">3. Import & Execute</h4>
+            <p className="text-sm text-gray-600">Import your plan as a goal and start making progress</p>
+          </div>
         </div>
       </div>
     </div>
